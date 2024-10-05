@@ -40,33 +40,41 @@ def create_message():
 # Route to get a message by id
 @app.route('/messages/<int:id>', methods=['GET'])
 def get_message_by_id(id):
-    message = Message.query.get_or_404(id)
+    message = db.session.get(Message, id)  # SQLAlchemy 2.0 method
+    if not message:
+        return jsonify({"error": "Message not found"}), 404
     return jsonify(message.to_dict()), 200
 
 # Route to update a message by id
+
 @app.route('/messages/<int:id>', methods=['PATCH'])
 def update_message(id):
-    message = Message.query.get_or_404(id)
-    data = request.get_json()
+    message = db.session.get(Message, id)  # Updated method
+    if not message:
+        return jsonify({"error": "Message not found"}), 404
     
+    data = request.get_json()
     if 'body' in data:
         message.body = data['body']
-    if 'username' in data:
-        message.username = data['username']
     
     db.session.commit()
     
     return jsonify(message.to_dict()), 200
 
+
 # Route to delete a message by id
+
 @app.route('/messages/<int:id>', methods=['DELETE'])
 def delete_message(id):
-    message = Message.query.get_or_404(id)
+    message = db.session.get(Message, id)  # Updated method
+    if not message:
+        return jsonify({"error": "Message not found"}), 404
     
     db.session.delete(message)
     db.session.commit()
     
     return jsonify({"message": "Message deleted successfully"}), 200
+
 
 if __name__ == '__main__':
     app.run(port=5555)
